@@ -2,7 +2,7 @@
 
 # Author: Gary A. Stafford
 # Sends sample messages to AWS IoT Core Topic
-# Usage: sh ./send_message.sh raw_data_small.json
+# Usage: sh ./send_sample_messages.sh raw_data_small.json
 
 if [[ $# -ne 1 ]]; then
   echo "Script requires 1 parameter..."
