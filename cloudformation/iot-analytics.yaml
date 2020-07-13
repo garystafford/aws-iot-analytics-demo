@@ -1,0 +1,180 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "IoT Analytics Stack Example"
+Parameters:
+  IoTTopicName:
+    Type: String
+    MinLength: 1
+    Default: "iot-device-data"
+    Description: "IoT Topic Name that your devices will send messages to."
+Resources:
+  IoTTopicRuleAllEvents:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      RuleName: "send_to_iot_analytics"
+      TopicRulePayload:
+        Description: "Sends IoT device data to IoT Analytics Channel"
+        AwsIotSqlVersion: "2016-03-23"
+        RuleDisabled: "false"
+        Sql: !Sub |
+          SELECT data.co,
+              data.humidity,
+              data.light,
+              data.lpg,
+              data.motion,
+              data.smoke,
+              data.temp,
+              device_id,
+              ts,
+              device_name AS device,
+              parse_time("yyyy-MM-dd'T'HH:mm:ss.SSSZ", timestamp(), "UTC") AS msg_received
+          FROM "${IoTTopicName}"
+        Actions:
+          - IotAnalytics:
+              ChannelName: !Ref IoTAnalyticsChannel
+              RoleArn: !GetAtt IoTTopicRuleRole.Arn
+  IoTAnalyticsChannel:
+    Type: AWS::IoTAnalytics::Channel
+    Properties:
+      ChannelName: "iot_analytics_channel"
+      RetentionPeriod:
+        Unlimited: false
+        NumberOfDays: 14
+      Tags:
+        - Key: "Project"
+          Value: "real-time-iot-analytics"
+  IoTAnalyticsPipeline:
+    Type: AWS::IoTAnalytics::Pipeline
+    Properties:
+      PipelineName: "iot_analytics_pipeline"
+      PipelineActivities:
+        - Channel:
+            Name: "ChannelActivity"
+            ChannelName: !Ref IoTAnalyticsChannel
+            Next: "FilterActivity"
+          Filter:
+            Name: "FilterActivity"
+            Filter: "co <> NULL OR lpg <> NULL OR smoke <> NULL OR temp <> NULL OR humidity <> NULL"
+            Next: "RemoveAttributesActivity"
+          RemoveAttributes:
+            Name: "RemoveAttributesActivity"
+            Attributes:
+              - "device_id"
+              - "msg_received"
+            Next: "SelectAttributesActivity"
+          SelectAttributes:
+            Name: "SelectAttributesActivity"
+            Attributes:
+              - "device"
+              - "ts"
+              - "humidity"
+              - "temp"
+              - "light"
+              - "motion"
+              - "lpg"
+              - "co"
+              - "smoke"
+            Next: "MathActivity"
+          Math:
+            Name: "MathActivity"
+            Math: "temp * 1.8 + 32"
+            Attribute: "temp"
+            Next: "DatastoreActivity"
+          Datastore:
+            Name: "DatastoreActivity"
+            DatastoreName: !Ref IoTAnalyticsDatastore
+      Tags:
+        - Key: "Project"
+          Value: "real-time-iot-analytics"
+  IoTAnalyticsDatastore:
+    Type: AWS::IoTAnalytics::Datastore
+    Properties:
+      DatastoreName: "iot_analytics_data_store"
+      RetentionPeriod:
+        Unlimited: false
+        NumberOfDays: 14
+      Tags:
+        - Key: "Project"
+          Value: "real-time-iot-analytics"
+  IoTAnalyticsDataset:
+    Type: AWS::IoTAnalytics::Dataset
+    Properties:
+      Actions:
+        - ActionName: "SqlAction"
+          QueryAction:
+            SqlQuery: !Sub "select * from ${IoTAnalyticsDatastore}"
+      DatasetName: "iot_analytics_data_set"
+      RetentionPeriod:
+        Unlimited: false
+        NumberOfDays: 14
+      Triggers:
+        - Schedule:
+            ScheduleExpression: "cron(0/15 * * * ? *)"
+      Tags:
+        - Key: "Project"
+          Value: "real-time-iot-analytics"
+  IoTTopicRuleRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - iot.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: "IoTTopicRulePolicyIoTAnalyticsChannel"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              Effect: Allow
+              Action:
+                - iotanalytics:BatchPutMessage
+              Resource:
+                !Join
+                - ""
+                - - "arn:aws:iotanalytics:"
+                  - !Ref AWS::Region
+                  - ":"
+                  - !Ref AWS::AccountId
+                  - ":channel/"
+                  - !Ref IoTAnalyticsChannel
+      Tags:
+        - Key: "Project"
+          Value: "real-time-iot-analytics"
+  BasicNotebookInstance:
+    Type: "AWS::SageMaker::NotebookInstance"
+    Properties:
+      NotebookInstanceName: "IoTAnalyticsNotebook"
+      InstanceType: "ml.t2.medium"
+      DefaultCodeRepository: "https://github.com/garystafford/real-time-iot-notebooks.git"
+      RoleArn: !GetAtt SageMakerExecutionRole.Arn
+  SageMakerExecutionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "sagemaker.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      Policies:
+        - PolicyName: "root"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action: "*"
+                Resource: "*"
+Outputs:
+  BasicNotebookInstanceId:
+    Value: !Ref BasicNotebookInstance
+  IncomingIoTDataTopicName:
+    Value: !Ref IoTTopicName

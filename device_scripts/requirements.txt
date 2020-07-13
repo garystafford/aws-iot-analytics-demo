@@ -1,0 +1,5 @@
+awsiotsdk
+adafruit-circuitpython-dht
+getmac
+gpiozero
+spidev
