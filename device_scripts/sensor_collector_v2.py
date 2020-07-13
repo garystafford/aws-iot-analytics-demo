@@ -17,6 +17,8 @@ from MQ import MQ
 # MQTT connection code is modified version of aws-iot-device-sdk-python-v2 sample:
 # https://github.com/aws/aws-iot-device-sdk-python-v2/blob/master/samples/pubsub.py
 # https://github.com/adafruit/Adafruit_CircuitPython_DHT
+# Note, we are only publishing messages with this script,
+# not subscribing (uncomment lines 79-87 to subscribe to topic)
 
 
 # Constants
