@@ -52,7 +52,7 @@ Resources:
               data.temp,
               device_id,
               ts,
-              device_name as device,
+              device,
               parse_time("yyyy-MM-dd'T'HH:mm:ss.SSSZ", timestamp(), "UTC") AS msg_received
           FROM "${IoTTopicName}"
         Actions:
@@ -85,12 +85,6 @@ Resources:
             Filter: >-
               co <> NULL OR lpg <> NULL OR smoke <> NULL OR temp <> NULL OR
               humidity <> NULL
-            Next: RemoveAttributesActivity
-          RemoveAttributes:
-            Name: RemoveAttributesActivity
-            Attributes:
-              - device_id
-              - msg_received
             Next: SelectAttributesActivity
           SelectAttributes:
             Name: SelectAttributesActivity
@@ -107,7 +101,7 @@ Resources:
             Next: EnrichActivity
           DeviceRegistryEnrich:
             Name: EnrichActivity
-            Attribute: Installed
+            Attribute: metadata
             RoleArn: !GetAtt
               - IoTAnalyticsPipelineRole
               - Arn
