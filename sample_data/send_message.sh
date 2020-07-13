@@ -5,7 +5,7 @@
 # Usage: sh ./send_message.sh raw_data_small.json
 
 if [[ $# -ne 1 ]]; then
-  echo "Script requires 1 parameters!"
+  echo "Script requires 1 parameter..."
   exit 1
 fi
 
