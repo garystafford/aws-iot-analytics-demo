@@ -22,7 +22,6 @@ aws cloudformation create-stack \
 sh sample_data/send_sample_messages.sh sample_data/raw_data_small.json
 
 # publish sample IoT messages (9,995 messages)
-unzip raw_data_large.json.zip
 sh sample_data/send_sample_messages.sh sample_data/raw_data_large.json
 
 # OPTIONAL: publish 24hrs. of sample of IoT messages (50,270 messages)
