@@ -12,10 +12,15 @@ fi
 
 dataFile=$1 # "raw_data_small.json"
 
+count=0
+
 jq -c '.[]' "${dataFile}" | while read -r i; do
   { aws iot-data publish \
     --topic "iot-device-data" \
     --qos 0 \
     --payload "$(echo "${i}" | base64)" \
     >/dev/null; } 2>&1
+
+  count=$((count + 1))
+  echo Messages sent: $count
 done
