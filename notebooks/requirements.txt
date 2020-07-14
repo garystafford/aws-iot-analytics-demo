@@ -1,0 +1,5 @@
+boto3
+jupyter
+matplotlib
+pandas
+plotly

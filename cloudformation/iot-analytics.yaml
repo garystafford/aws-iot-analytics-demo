@@ -337,7 +337,7 @@ Resources:
     Properties:
       NotebookInstanceName: IoTAnalyticsNotebook
       InstanceType: ml.t2.medium
-      DefaultCodeRepository: 'https://github.com/garystafford/real-time-iot-notebooks.git'
+      DefaultCodeRepository: 'https://github.com/garystafford/aws-iot-analytics-demo.git'
       RoleArn: !GetAtt SageMakerExecutionRole.Arn
   SageMakerExecutionRole:
     Type: 'AWS::IAM::Role'
