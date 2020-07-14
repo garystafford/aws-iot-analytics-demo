@@ -98,6 +98,12 @@ Resources:
               - lpg
               - co
               - smoke
+              - msg_received
+            Next: LambdaActivity
+          Lambda:
+            Name: LambdaActivity
+            LambdaName: !Ref PipelineLambdaFunction
+            BatchSize: 10
             Next: EnrichActivity
           DeviceRegistryEnrich:
             Name: EnrichActivity
@@ -145,6 +151,59 @@ Resources:
       Tags:
         - Key: Project
           Value: iot-analytics-demo
+  PipelineLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Code:
+        ZipFile: |
+          import datetime
+
+
+          def convert_time(t):
+              return datetime.datetime.utcfromtimestamp(t).isoformat()
+
+
+          def lambda_handler(event, context):
+              for e in event:
+                  e['temp'] = round(e['temp'], 2)
+                  e['humidity'] = round(e['humidity'], 2)
+                  e['co'] = round(e['co'], 4)
+                  e['lpg'] = round(e['lpg'], 4)
+                  e['smoke'] = round(e['smoke'], 4)
+                  e['ts'] = convert_time(e['ts'])
+              return event
+      Handler: index.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: python3.7
+      Timeout: 60
+      MemorySize: 128
+  PipelineLambdaPermission:
+      Type: 'AWS::Lambda::Permission'
+      Properties:
+        FunctionName: !GetAtt PipelineLambdaFunction.Arn
+        Action: lambda:InvokeFunction
+        Principal: iotanalytics.amazonaws.com
+  LambdaExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Policies:
+        - PolicyName: allowLambdaLogs
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Action:
+              - logs:*
+              Resource: arn:aws:logs:*:*:*
   IoTAnalyticsPipelineRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -165,7 +224,7 @@ Resources:
             Statement:
               Effect: Allow
               Action:
-                - 'iot:DescribeThing'
+                - iot:DescribeThing
               Resource: !Join
                 - ''
                 - - 'arn:aws:iot:'
@@ -197,7 +256,7 @@ Resources:
             Statement:
               Effect: Allow
               Action:
-                - 'iotanalytics:BatchPutMessage'
+                - iotanalytics:BatchPutMessage
               Resource: !Join
                 - ''
                 - - 'arn:aws:iotanalytics:'
