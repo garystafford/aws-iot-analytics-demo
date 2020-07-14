@@ -19,12 +19,13 @@ aws cloudformation create-stack \
     --capabilities CAPABILITY_NAMED_IAM
 
 # publish sample messages to test cfn stack (5 messages)
-sh sample_data/send_sample_messages.sh sample_data/raw_data_small.json
+cd sample_data
+time python3 ./send_sample_messages.py -f raw_data_small.json -t iot-device-data
 
 # publish sample IoT messages (9,995 messages)
-sh sample_data/send_sample_messages.sh sample_data/raw_data_large.json
+time python3 ./send_sample_messages.py -f raw_data_large.json -t iot-device-data
 
 # OPTIONAL: publish 24hrs. of sample of IoT messages (50,270 messages)
 unzip raw_data_xlarge.json.zip
-sh sample_data/send_sample_messages.sh sample_data/raw_data_xlarge.json
+time python3 ./send_sample_messages.py -f raw_data_xlarge.json -t iot-device-data
 ```

@@ -12,5 +12,5 @@ def lambda_handler(event, context):
         e['co'] = round(e['co'], 4)
         e['lpg'] = round(e['lpg'], 4)
         e['smoke'] = round(e['smoke'], 4)
-        e['ts'] = convert_time(e['ts'])
+        # e['ts'] = convert_time(e['ts'])
     return event
