@@ -17,5 +17,5 @@ jq -c '.[]' "${dataFile}" | while read -r i; do
     --topic "iot-device-data" \
     --qos 0 \
     --payload "$(echo "${i}" | base64)" \
-    > /dev/null; } 2>&1
+    >/dev/null; } 2>&1
 done
