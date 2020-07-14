@@ -7,16 +7,16 @@ Code for upcoming post, "Getting Started with AWS IoT Analytics".
 ```bash
 # clone project
 git clone \
---branch master --single-branch --depth 1 --no-tags \
-https://github.com/garystafford/kinesis-redshift-streaming-demo.git
+    --branch master --single-branch --depth 1 --no-tags \
+    https://github.com/garystafford/aws-iot-analytics-demo.git
 
 # deploy AWS resources
 aws cloudformation create-stack \
-  --stack-name iot-analytics-demo \
-  --template-body file://cloudformation/iot-analytics.yaml \
-  --parameters ParameterKey=ProjectName,ParameterValue=iot-analytics-demo \
+    --stack-name iot-analytics-demo \
+    --template-body file://cloudformation/iot-analytics.yaml \
+    --parameters ParameterKey=ProjectName,ParameterValue=iot-analytics-demo \
                ParameterKey=IoTTopicName,ParameterValue=iot-device-data \
-  --capabilities CAPABILITY_NAMED_IAM
+    --capabilities CAPABILITY_NAMED_IAM
 
 # publish sample messages to test cfn stack (5 messages)
 cd sample_data
