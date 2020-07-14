@@ -2,7 +2,7 @@ import datetime
 
 
 def convert_time(t):
-    return datetime.datetime.utcfromtimestamp(t).isoformat()
+    return "{}{}".format(datetime.datetime.utcfromtimestamp(t).isoformat(), '+0000')
 
 
 def lambda_handler(event, context):
