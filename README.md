@@ -1,6 +1,6 @@
-# Getting Started with AWS IoT Analytics
+# Getting Started with IoT Analytics on AWS
 
-Code for upcoming post, "Getting Started with AWS IoT Analytics".
+Code for blog post, [Getting Started with IoT Analytics on AWS](https://wp.me/p1RD28-727).
 
 ## Code Usage
 
