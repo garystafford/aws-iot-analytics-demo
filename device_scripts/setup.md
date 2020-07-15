@@ -13,7 +13,7 @@ python3 -m pip install --user -r requirements.txt
 
 ## Start Collector Script
 
-Install all AWS IoT certificates and keys on device
+Install all AWS IoT certificates and keys on device.
 
 ```bash
 YOUR_AWS_IOT_ENDPOINT=mnwdhx07n1asx1-ats.iot.us-west-1.amazonaws.com
